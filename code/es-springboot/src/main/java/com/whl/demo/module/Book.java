@@ -14,7 +14,7 @@ public class Book {
     private String id;
     private String title;
     private String content;
-    private Date createTime;
+    private String createTime;
     private Long readCount;
     private double price;
     private List<String> authorList;
@@ -43,11 +43,11 @@ public class Book {
         this.content = content;
     }
 
-    public Date getCreateTime() {
+    public String getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
 

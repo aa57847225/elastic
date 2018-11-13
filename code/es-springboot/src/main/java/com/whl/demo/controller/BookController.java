@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -29,6 +30,8 @@ public class BookController extends BaseController{
 
     @Resource
     private BaseRepository baseRepository;
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @RequestMapping(value = "/deleteBookIndex")
     public ResponseVo<?> deleteBookIndex(){
@@ -58,7 +61,7 @@ public class BookController extends BaseController{
         b1.setId(UUID.randomUUID().toString());
         b1.setTitle("西游记");
         b1.setContent("西游记是中国古代第一部浪漫主义章回体长篇神魔小说");
-        b1.setCreateTime(new Date());
+        b1.setCreateTime(sdf.format(new Date()));
         b1.setReadCount(10000000L);
         b1.setPrice(100.21);
         List<String> author1 = new ArrayList<>();
@@ -72,7 +75,7 @@ public class BookController extends BaseController{
         b2.setId(UUID.randomUUID().toString());
         b2.setTitle("西门吹雪");
         b2.setContent("西门吹雪是中国网络武侠小说");
-        b2.setCreateTime(new Date());
+        b2.setCreateTime(sdf.format(new Date()));
         b2.setReadCount(10000L);
         b2.setPrice(30.21);
         List<String> author2 = new ArrayList<>();
@@ -98,7 +101,7 @@ public class BookController extends BaseController{
             b2.setId("37e533f3-a44e-42cc-9d97-458936284e96");
             b2.setTitle("西门吹雪大战叶孤城2");
             b2.setContent("西门吹雪是中国网络武侠小说");
-            b2.setCreateTime(new Date());
+            b2.setCreateTime(sdf.format(new Date()));
             b2.setReadCount(10000L);
             b2.setPrice(30.21);
             List<String> author2 = new ArrayList<>();
@@ -125,7 +128,7 @@ public class BookController extends BaseController{
             b1.setId("e5ed8df9-952e-4072-a55c-8ca301bef230");
             b1.setTitle("西游记");
             b1.setContent("西游记是中国古代第一部浪漫主义章回体长篇神魔小说");
-            b1.setCreateTime(new Date());
+            b1.setCreateTime(sdf.format(new Date()));
             b1.setReadCount(10000000L);
             b1.setPrice(100.21);
             List<String> author1 = new ArrayList<>();
@@ -139,7 +142,7 @@ public class BookController extends BaseController{
             b2.setId("37e533f3-a44e-42cc-9d97-458936284e96");
             b2.setTitle("西门吹雪");
             b2.setContent("西门吹雪是中国网络武侠小说");
-            b2.setCreateTime(new Date());
+            b2.setCreateTime(sdf.format(new Date()));
             b2.setReadCount(10000L);
             b2.setPrice(30.21);
             List<String> author2 = new ArrayList<>();

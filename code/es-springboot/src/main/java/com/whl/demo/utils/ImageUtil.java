@@ -12,7 +12,7 @@ import java.util.List;
 /***
  * @Author whl
  * @Description //TODO 生成微信头像工具类
- * @Date 上午 9:26 2018/11/13 0013
+ * @Date 上午 11:04 2018/11/13 0013
  * @Param 
  * @return 
  **/

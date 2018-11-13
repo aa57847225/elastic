@@ -111,7 +111,7 @@ public class ESConfiguration implements FactoryBean<TransportClient>, Initializi
 			Settings esSetting = Settings.builder().put("cluster.name", clusterName).put("client.transport.sniff", true)// 增加嗅探机制，找到ES集群
 //					.put("thread_pool.search.type", "fixed")
 					.put("thread_pool.search.size", Integer.parseInt(poolSize))// 增加线程池个数，暂时设为500
-					.put("thread_pool.bulk.size", 50)
+//					.put("thread_pool.bulk.size", 50)
 					.build();
 
 			client = new PreBuiltTransportClient(esSetting);

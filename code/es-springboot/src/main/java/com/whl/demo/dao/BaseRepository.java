@@ -112,7 +112,7 @@ public class BaseRepository {
                     .startObject("title").field("type", "string").startObject("fields").startObject("suggest")
                     .field("type", "completion").endObject().endObject().endObject()
                     .startObject("content").field("type", "string").endObject()
-                    .startObject("createTime").field("type", "date").endObject()
+                    .startObject("createTime").field("type", "date").field("format","yyyy-MM-dd hh:mm:ss").endObject()
                     .startObject("readCount").field("type", "long").endObject()
                     .startObject("price").field("type", "double").endObject()
                     .startObject("authorList").field("type", "string").endObject()
