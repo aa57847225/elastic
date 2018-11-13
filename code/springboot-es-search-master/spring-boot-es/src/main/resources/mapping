@@ -1,0 +1,22 @@
+{
+  "mappings": {
+    "news" : {
+      "properties" : {
+        "title" : {
+          "type": "text",
+
+          "fields": {
+            "suggest" : {
+              "type" : "completion",
+              "analyzer": "ik_max_word"
+            }
+          }
+        },
+        "content": {
+          "type": "text",
+          "analyzer": "ik_max_word"
+        }
+      }
+    }
+  }
+}
