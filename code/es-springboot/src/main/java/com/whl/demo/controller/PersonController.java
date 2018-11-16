@@ -180,7 +180,8 @@ public class PersonController extends BaseController{
     public ResponseVo<?> searchByParam(){
         try {
             BasicSearchParam param = new BasicSearchParam();
-            param.setKeyWord("ya");
+//            param.setKeyWord("ya");
+            param.setKeyWord("鸭");
             param.setField("name.my_pinyin");
             param.setIndex("person");
             param.setLimit(10);
