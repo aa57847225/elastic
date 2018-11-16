@@ -1,0 +1,48 @@
+curl -XPUT http://192.168.0.49:9200/testfullpinyin -d'
+{
+    "index" : {
+        "analysis" : {
+            "analyzer" : {
+               "default" : {                                   //默认分词器使用ik分词器
+                     "tokenizer" : "ik_max_word"
+               },
+               "pinyin_analyzer" : {                           //自定义拼音分词器
+                     "tokenizer" : "my_pinyin"
+               }
+            },
+            "tokenizer" : {
+                "my_pinyin" : {                                //拼音分词器配置
+                    "type" : "pinyin",
+                    "keep_first_letter":true,
+                    "keep_separate_first_letter" : false,
+                    "keep_full_pinyin" : false,
+                    "limit_first_letter_length" : 20,
+                    "lowercase" : true,
+                    "keep_none_chinese":false
+                 }
+            }
+        }
+    }
+}'
+
+
+
+
+
+curl -XPOST http://192.168.0.49:9200/testfullpinyin/dev/_mapping -d'
+{
+    "dev": {
+        "properties": {
+            "name": {                                        //name字段
+                "type": "text",                              //字符串类型支持分词
+                "analyzer": "pinyin_analyzer",               //使用拼音分词
+                 "fields": {                                 //包含的另一种不分词效果
+                     "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            }
+        }
+    }
+}'

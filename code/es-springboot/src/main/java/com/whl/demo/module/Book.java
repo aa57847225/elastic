@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * @program: esspringboot
- * @description:
+ * @description:只支持IK搜索
  * @author: Mr.Wang
  * @create: 2018-11-07 18:37
  **/

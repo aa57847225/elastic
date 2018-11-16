@@ -1,15 +1,9 @@
 package com.whl.demo.controller;
 
-import com.whl.demo.constants.ESWebStatusEnum;
-import com.whl.demo.constants.ResponseVo;
 import com.whl.demo.dao.BaseRepository;
 import com.whl.demo.dao.Init;
 import com.whl.demo.dao.PostRepository;
-import com.whl.demo.module.Book;
 import com.whl.demo.module.Post;
-import com.whl.demo.page.BootstrapTablePaginationVo;
-import com.whl.demo.param.BasicSearchParam;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +13,12 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -37,7 +30,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  **/
 @RestController
 @RequestMapping("/post")
-public class PostController{
+public class PostController {
 
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
 
@@ -56,35 +49,35 @@ public class PostController{
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @RequestMapping(value = "/deletePostIndex")
-    public String deletePostIndex(){
+    public String deletePostIndex() {
         try {
             baseRepository.deleteIndex("projectname");
             return "0";
-        }catch (Exception e){
-            log.info(e.getMessage(),e);
+        } catch (Exception e) {
+            log.info(e.getMessage(), e);
             return "1";
         }
     }
 
     @RequestMapping("/init")
-    public String init(){
+    public String init() {
         try {
             init.init();
             return "0";
-        }catch (Exception e){
-            log.info(e.getMessage(),e);
+        } catch (Exception e) {
+            log.info(e.getMessage(), e);
             return "1";
         }
     }
 
     /**
      * 单字符串模糊查询，默认排序。将从所有字段中查找包含传来的word分词后字符串的数据集
-     *
+     * <p>
      * http://localhost:8081/post/singleWord?page=1&size=10&word=%E5%AE%8B&sort=id.keyword,asc|desc
      * http://localhost:8081/post/singleWord?page=1&size=10&word=%E5%AE%8B&sort=title.keyword,desc
      */
     @RequestMapping("/singleWord")
-    public Object singleTitle(String word,Pageable pageable) {
+    public Object singleTitle(String word, Pageable pageable) {
         //使用queryStringQuery完成单字符串查询
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(queryStringQuery(word)).withPageable(pageable).build();
         return elasticsearchTemplate.queryForList(searchQuery, Post.class);
@@ -156,7 +149,7 @@ public class PostController{
             Post post = new Post();
             post.setId("AWcQTMw3UMTIxf5fRZ7T");
             postRepository.delete(post);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
