@@ -69,291 +69,47 @@ public class BaseRepository {
     private TransportClient client;
 
     /**
-     * 构建小说索引(暂时无分词器)
-     * {
-     * "mappings": {
-     * "news" : {
-     * "properties" : {
-     * "title" : {
-     * "type": "text",
-     * "fields": {
-     * "suggest" : {
-     * "type" : "completion",
-     * "analyzer": "ik_max_word"
-     * }
-     * }
-     * },
-     * "content": {
-     * "type": "text",
-     * "analyzer": "ik_max_word"
-     * }
-     * }
-     * }
-     * }
-     * }
-     *
-     * @return
-     */
-    public boolean buildNovelBookIndex() {
-        try {
-//			XContentBuilder mapping = XContentFactory.jsonBuilder()
-//					.startObject()
-//					.startObject("properties")
-//					.startObject("id").field("type","string")
-//					.startObject("title").field("type","string").startObject("fields").startObject("suggest")
-//					.field("type","completion").endObject().endObject().endObject()
-//					.startObject("content").field("type","string").endObject()
-//					.startObject("createTime").field("type","date").endObject()
-//					.startObject("readCount").field("type","long").endObject()
-//					.startObject("price").field("type","double").endObject()
-//					.startObject("authorList").field("type","array").endObject()
-//					.endObject()
-//					.endObject();
-
-//            XContentBuilder mapping2 = XContentFactory.jsonBuilder()
-//                    .startObject()
-//                    .startObject("index")
-//                    .startObject("analysis")
-//                    .startObject("analyzer")
-//                    .startObject("default").field("tokenizer","ik_max_word").endObject()
-//                    .startObject("pinyin_analyzer").field("tokenizer","my_pinyin").endObject()
-//                    .endObject()
-//                    .startObject("tokenizer").startObject("my_pinyin")
-//                    .field("type","pinyin")
-//                    .field("keep_first_letter",true)
-//                    .field("keep_separate_first_letter",false)
-//                    .field("keep_full_pinyin",false)
-//                    .field("limit_first_letter_length",20)
-//                    .field("lowercase",true)
-//                    .field("keep_none_chinese",false)
-//                    .endObject()
-//                    .endObject()
-//                    .endObject()
-//                    .endObject()
-//                    .endObject();
-
-
-
-            XContentBuilder mapping = XContentFactory.jsonBuilder()
-                    .startObject()
-                    .startObject("properties")
-                    .startObject("id").field("type", "string").endObject()
-                    .startObject("title").field("type", "string")
-                    .field("analyzer","ik_max_word").field("search_analyzer","ik_smart")
-                    .startObject("fields").startObject("suggest")
-                    .field("type", "completion").endObject().endObject().endObject()
-                    .startObject("content").field("type", "string").field("analyzer","pinyin_analyzer").endObject()
-                    .startObject("createTime").field("type", "date").field("format","yyyy-MM-dd hh:mm:ss").endObject()
-                    .startObject("readCount").field("type", "long").endObject()
-                    .startObject("price").field("type", "double").endObject()
-                    .startObject("authorList").field("type", "string").endObject()
-                    .endObject()
-                    .endObject();
-            //pois：索引名   cxyword：类型名（可以自己定义）
-            PutMappingRequest putmap = Requests.putMappingRequest("book").type("novel").source(mapping);
-            //创建索引
-            client.admin().indices().prepareCreate("book").execute().actionGet();
-            //为索引添加映射
-            PutMappingResponse buildIndexresponse = client.admin().indices().putMapping(putmap).actionGet();
-            return buildIndexresponse.isAcknowledged();
-        } catch (Exception e) {
-            logger.info("== buildNovelBookIndex error ==" + e.getMessage(), e);
-        }
-        return false;
-    }
-
-
-    /**
-     * 添加单个小说数据
-     *
-     * @param book
-     * @return
-     */
-    public String addNovelBookIndexDataSingle(Book book) {
-        try {
-            BulkRequestBuilder bulkRequest = client.prepareBulk();
-            //插入
-            bulkRequest.add(this.client.prepareIndex("book", "novel", book.getId())
-                    .setSource(XContentFactory.jsonBuilder()
-                            .startObject()
-                            .field("id", book.getId())
-                            .field("title", book.getTitle())
-                            .field("content", book.getContent())
-                            .field("createTime", book.getCreateTime())
-                            .field("readCount", book.getReadCount())
-                            .field("price", book.getPrice())
-                            .field("authorList", book.getAuthorList())
-                            .endObject()
-                    )
-            );
-            //批量执行
-            BulkResponse bulkResponse = bulkRequest.get();
-            return bulkResponse.getTook().toString();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * 批量添加小说数据
-     *
-     * @return
-     */
-    public String addNovelBookIndexDataBatch(List<Book> bookList) {
-
-        try {
-            BulkRequestBuilder bulkRequest = client.prepareBulk();
-
-            for (Book book : bookList) {
-                //插入
-                bulkRequest.add(this.client.prepareIndex("book", "novel", book.getId())
-                        .setSource(XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("id", book.getId())
-                                .field("title", book.getTitle())
-                                .field("content", book.getContent())
-                                .field("createTime", book.getCreateTime())
-                                .field("readCount", book.getReadCount())
-                                .field("price", book.getPrice())
-                                .field("authorList", book.getAuthorList())
-                                .endObject()
-                        )
-                );
-            }
-            //批量执行
-            BulkResponse bulkResponse = bulkRequest.get();
-            return bulkResponse.getTook().toString();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * 更新单个小说数据
-     *
-     * @param book
-     * @return
-     */
-    public String updateNovelBookIndexDataSingle(Book book) {
-        try {
-            XContentBuilder builder = XContentFactory.jsonBuilder().startObject()
-                    .field("id", book.getId())
-                    .field("title", book.getTitle())
-                    .field("content", book.getContent())
-                    .field("createTime", book.getCreateTime())
-                    .field("readCount", book.getReadCount())
-                    .field("price", book.getPrice())
-                    .field("authorList", book.getAuthorList())
-                    .endObject();
-            UpdateResponse response = client.prepareUpdate("book", "novel", book.getId()).setDoc(builder).get();
-
-//            UpdateRequest updateRequest = new UpdateRequest();
-//            updateRequest.index("book")
-//                    .type("novel")
-//                    .id(book.getId())
-//                    .doc(XContentFactory.jsonBuilder()
-//                            .startObject()
-//                            .field("id", book.getId())
-//                            .field("title", book.getTitle())
-//                            .field("content", book.getContent())
-//                            .field("createTime", book.getCreateTime())
-//                            .field("readCount", book.getReadCount())
-//                            .field("price", book.getPrice())
-//                            .field("authorList", book.getAuthorList())
-//                            .endObject()
-//                    );
-//            UpdateResponse response = client.update(updateRequest).get();
-            return response.status().toString();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * 批量更新小说数据
-     *
-     * @param bookList
-     * @return
-     */
-    public boolean updateNovelBookIndexDataBatch(List<Book> bookList) {
-
-        boolean isUpdate = false;
-        try {
-            BulkRequestBuilder bulkRequest = client.prepareBulk();
-            for(Book book:bookList){
-                bulkRequest.add(client.prepareUpdate("book", "novel", book.getId()).setDoc(XContentFactory.jsonBuilder()
-                        .startObject()
-                        .field("id", book.getId())
-                        .field("title", book.getTitle())
-                        .field("content", book.getContent())
-                        .field("createTime", book.getCreateTime())
-                        .field("readCount", book.getReadCount())
-                        .field("price", book.getPrice())
-                        .field("authorList", book.getAuthorList())
-                        .endObject()));
-            }
-            BulkResponse bulkResponse = bulkRequest.get();
-            if (bulkResponse.hasFailures()) {
-                System.out.println("failures..............:" + bulkResponse.buildFailureMessage());
-                return false;
-            }else{
-                return true;
-            }
-        }catch (Exception e){
-            logger.info(e.getMessage(),e);
-        }
-        return isUpdate;
-    }
-
-    /**
-     * 批量删除小说数据
-     *
-     * @param bookList
-     * @return
-     */
-    public boolean deleteNovelBookIndexDataBatch(List<Book> bookList) {
-
-        boolean isUpdate = false;
-        try {
-            BulkRequestBuilder bulkRequest = client.prepareBulk();
-            for(Book book:bookList){
-                bulkRequest.add(client.prepareDelete("book", "novel", book.getId()));
-            }
-            BulkResponse bulkResponse = bulkRequest.get();
-            if (bulkResponse.hasFailures()) {
-                System.out.println("failures..............:" + bulkResponse.buildFailureMessage());
-                return false;
-            }else{
-                return true;
-            }
-        }catch (Exception e){
-            logger.info(e.getMessage(),e);
-        }
-        return isUpdate;
-    }
-
-    /**
-     * 删除单个小说数据
+     * 删除单个数据
      *
      * @param id
      * @return
      */
-    public String deleteNovelBookIndexDataSingle(String id) {
+    public String deleteIndexDataSingle(String index,String type,String id) {
         try {
-
-            DeleteResponse response = client.prepareDelete("book", "novel", id).execute().actionGet();
+            DeleteResponse response = client.prepareDelete(index, type, id).execute().actionGet();
             return response.toString();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 批量删除数据
+     *
+     * @param idList
+     * @return
+     */
+    public boolean deleteIndexDataBatch(String index,String type,List<String> idList) {
+
+        boolean isUpdate = false;
+        try {
+            BulkRequestBuilder bulkRequest = client.prepareBulk();
+            for(String id:idList){
+                bulkRequest.add(client.prepareDelete(index, type,id));
+            }
+            BulkResponse bulkResponse = bulkRequest.get();
+            if (bulkResponse.hasFailures()) {
+                System.out.println("failures..............:" + bulkResponse.buildFailureMessage());
+                return false;
+            }else{
+                return true;
+            }
+        }catch (Exception e){
+            logger.info(e.getMessage(),e);
+        }
+        return isUpdate;
     }
 
     /**
@@ -374,7 +130,6 @@ public class BaseRepository {
         }
         return diResponse.isAcknowledged();
     }
-
 
     /**
      * 判断索引是否存在

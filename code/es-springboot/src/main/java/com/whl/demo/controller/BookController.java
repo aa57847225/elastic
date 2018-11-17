@@ -1,8 +1,10 @@
 package com.whl.demo.controller;
 
 import com.whl.demo.constants.ESWebStatusEnum;
+import com.whl.demo.constants.IndexCommon;
 import com.whl.demo.constants.ResponseVo;
 import com.whl.demo.dao.BaseRepository;
+import com.whl.demo.dao.BookRepository;
 import com.whl.demo.module.Book;
 import com.whl.demo.page.BootstrapTablePaginationVo;
 import com.whl.demo.param.BasicSearchParam;
@@ -31,6 +33,9 @@ public class BookController extends BaseController{
     @Resource
     private BaseRepository baseRepository;
 
+    @Resource
+    private BookRepository bookRepository;
+
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @RequestMapping(value = "/deleteBookIndex")
@@ -45,7 +50,7 @@ public class BookController extends BaseController{
 
     @RequestMapping(value = "/buildBookIndex")
     public ResponseVo<?> buildBookIndex(){
-        boolean isBuild =  baseRepository.buildNovelBookIndex();
+        boolean isBuild =  bookRepository.buildNovelBookIndex();
         if(isBuild){
             return generateResponseVo(ESWebStatusEnum.SUCCESS, null);
         }else{
@@ -85,7 +90,7 @@ public class BookController extends BaseController{
         b2.setAuthorList(author2);
         books.add(b2);
 
-        String buildIndex =  baseRepository.addNovelBookIndexDataBatch(books);
+        String buildIndex =  bookRepository.addNovelBookIndexDataBatch(books);
         if(!StringUtils.isEmpty(buildIndex)){
             return generateResponseVo(ESWebStatusEnum.SUCCESS, buildIndex);
         }else{
@@ -110,7 +115,7 @@ public class BookController extends BaseController{
             author2.add("作者31");
             b2.setAuthorList(author2);
 
-            baseRepository.updateNovelBookIndexDataSingle(b2);
+            bookRepository.updateNovelBookIndexDataSingle(b2);
             return generateResponseVo(ESWebStatusEnum.SUCCESS, "success");
         }catch (Exception e){
             log.info(e.getMessage(),e);
@@ -152,7 +157,7 @@ public class BookController extends BaseController{
             b2.setAuthorList(author2);
             books.add(b2);
 
-            Boolean isSuccess =  baseRepository.updateNovelBookIndexDataBatch(books);
+            Boolean isSuccess =  bookRepository.updateNovelBookIndexDataBatch(books);
             return generateResponseVo(ESWebStatusEnum.SUCCESS, isSuccess);
         }catch (Exception e){
             log.info(e.getMessage(),e);
@@ -163,7 +168,7 @@ public class BookController extends BaseController{
     @RequestMapping(value = "/deleteBookDataSingle")
     public ResponseVo<?> deleteBookDataSingle(){
         try{
-            baseRepository.deleteNovelBookIndexDataSingle("7e533f3-a44e-42cc-9d97-458936284e96");
+            baseRepository.deleteIndexDataSingle(IndexCommon.index_book,IndexCommon.index_book_type_novel,"7e533f3-a44e-42cc-9d97-458936284e96");
             return generateResponseVo(ESWebStatusEnum.SUCCESS, null);
         }catch (Exception e){
             log.info(e.getMessage(),e);
@@ -174,17 +179,11 @@ public class BookController extends BaseController{
     @RequestMapping(value = "/deleteBookDataBatch")
     public ResponseVo<?> deleteBookDataBatch(){
         try{
-            List<Book> bookList = new ArrayList<>();
-            Book b1 = new Book();
-            b1.setId("37e533f3-a44e-42cc-9d97-458936284e96");
-            Book b2 = new Book();
-            b2.setId("d66f6a9e-3122-4cb1-b29a-7464325dcadc");
-            Book b3 = new Book();
-            b3.setId("29c1427d-e37d-4f89-ac01-9ba30d8b2eaa");
-            bookList.add(b1);
-            bookList.add(b2);
-            bookList.add(b3);
-            baseRepository.deleteNovelBookIndexDataBatch(bookList);
+            List<String> bookIdList = new ArrayList<>();
+            bookIdList.add("37e533f3-a44e-42cc-9d97-458936284e96");
+            bookIdList.add("d66f6a9e-3122-4cb1-b29a-7464325dcadc");
+            bookIdList.add("29c1427d-e37d-4f89-ac01-9ba30d8b2eaa");
+            baseRepository.deleteIndexDataBatch(IndexCommon.index_book,IndexCommon.index_book_type_novel,bookIdList);
             return generateResponseVo(ESWebStatusEnum.SUCCESS, null);
         }catch (Exception e){
             log.info(e.getMessage(),e);
