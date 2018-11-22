@@ -1,11 +1,16 @@
 package com.whl.demo.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.whl.demo.dao.BaseRepository;
 import com.whl.demo.dao.CarRepository;
 import com.whl.demo.dao.Init;
 import com.whl.demo.dao.PostRepository;
 import com.whl.demo.module.Car;
 import com.whl.demo.module.Post;
+import com.whl.demo.service.MyLog;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -79,7 +85,7 @@ public class CarController {
 
             Car car2 = new Car();
             car2.setId(UUID.randomUUID().toString());
-            car2.setColor("红色色");
+            car2.setColor("红色");
             car2.setCreateTime(sdf.format(new Date()));
             car2.setName("宝马4系");
             car2.setPrice(450000.00);
@@ -99,9 +105,9 @@ public class CarController {
      * http://localhost:8081/post/singleWord?page=1&size=10&word=%E5%AE%8B&sort=title.keyword,desc
      */
     @RequestMapping("/singleWord")
-    public Object singleTitle(String color, Pageable pageable) {
+    public Object singleTitle(String name, Pageable pageable) {
         //使用queryStringQuery完成单字符串查询
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(queryStringQuery(color)).withPageable(pageable).build();
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(queryStringQuery(name)).withPageable(pageable).build();
         return elasticsearchTemplate.queryForList(searchQuery, Car.class);
     }
 
@@ -130,8 +136,8 @@ public class CarController {
      * 单字段对某短语进行匹配查询，短语分词的顺序会影响结果
      */
     @RequestMapping("/singlePhraseMatch")
-    public Object singlePhraseMatch(String name, @PageableDefault Pageable pageable) {
-        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(matchPhraseQuery("name", name)).withPageable(pageable).build();
+    public Object singlePhraseMatch(String content, @PageableDefault Pageable pageable) {
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(matchPhraseQuery("content", content)).withPageable(pageable).build();
         return elasticsearchTemplate.queryForList(searchQuery, Car.class);
     }
 
@@ -211,14 +217,14 @@ public class CarController {
         return null;
     }
 
-//    /**
-//     * 单字段包含所有输入(按比例包含)
-//     */
-//    @RequestMapping("/contain")
-//    public Object contain(String title) {
-//        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(matchQuery("title", title).operator(MatchQueryBuilder.Operator.AND).minimumShouldMatch("75%")).build();
-//        return elasticsearchTemplate.queryForList(searchQuery, Post.class);
-//    }
+    /**
+     * 单字段包含所有输入(按比例包含)
+     */
+    @RequestMapping("/contains")
+    public Object contains(String title) {
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(matchQuery("title", title).operator(MatchQueryBuilder.DEFAULT_OPERATOR).minimumShouldMatch("75%")).build();
+        return elasticsearchTemplate.queryForList(searchQuery, Post.class);
+    }
 
 
     /**
@@ -229,5 +235,66 @@ public class CarController {
         SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(boolQuery().must(termQuery("userId", userId))
                 .should(rangeQuery("weight").lt(weight)).must(matchQuery("title", title))).build();
         return elasticsearchTemplate.queryForList(searchQuery, Post.class);
+    }
+
+    /**
+     * 多字段合并查询
+     * http://localhost:8081/car/queryByParam?name=%E5%AE%9D%E9%A9%AC4      宝马3
+     * color 没有ik分词只有拼音首字母                                       hs
+     *http://localhost:8081/car/queryByParam?startCreateTime=2018-11-22%2003:39:56
+     */
+    @MyLog("测试")
+    @RequestMapping("/queryByParam")
+    public Object queryByParam(Car car,@PageableDefault(sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        System.out.println("===========car============"+JSON.toJSONString(car));
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        MatchPhraseQueryBuilder nameQb;
+        MatchPhraseQueryBuilder colorQb;
+        if(car != null){
+            if(!StringUtils.isEmpty(car.getName())){
+                nameQb = QueryBuilders.matchPhraseQuery("name", car.getName()).slop(1);
+//                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("name", car.getName());
+                boolQueryBuilder.must(nameQb);
+            }
+            if(!StringUtils.isEmpty(car.getColor())){
+                colorQb = QueryBuilders.matchPhraseQuery("color", car.getColor()).slop(1);
+//                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("color", car.getColor());
+                boolQueryBuilder.must(colorQb);
+            }
+
+            RangeQueryBuilder rangeQueryBuilder = null;
+            if(!StringUtils.isEmpty(car.getMinPrice())){
+                rangeQueryBuilder = QueryBuilders.rangeQuery("price").gte(car.getMinPrice());
+            }
+
+            if(!StringUtils.isEmpty(car.getMaxPrice())){
+                if(rangeQueryBuilder != null){
+                    rangeQueryBuilder.lte(car.getMaxPrice());
+                }
+                else {
+                    rangeQueryBuilder = QueryBuilders.rangeQuery("price").lte(car.getMaxPrice());
+                }
+            }
+            if(rangeQueryBuilder != null){boolQueryBuilder.must(rangeQueryBuilder);}
+
+            RangeQueryBuilder timeRangeQueryBuilder = null;
+            if(!StringUtils.isEmpty(car.getStartCreateTime())){
+                timeRangeQueryBuilder = QueryBuilders.rangeQuery("createTime").from(car.getStartCreateTime());
+            }
+
+            if(!StringUtils.isEmpty(car.getEndCreateTime())){
+                if(timeRangeQueryBuilder != null){
+                    timeRangeQueryBuilder.to(car.getEndCreateTime());
+                }
+                else {
+                    timeRangeQueryBuilder = QueryBuilders.rangeQuery("createTime").to(car.getEndCreateTime());
+                }
+            }
+            if(timeRangeQueryBuilder != null){boolQueryBuilder.must(timeRangeQueryBuilder);}
+
+        }
+        SearchQuery searchQuery = new NativeSearchQueryBuilder().withSort(SortBuilders.scoreSort().order(SortOrder.DESC)).withQuery(boolQueryBuilder).withPageable(pageable).build();
+        return elasticsearchTemplate.queryForList(searchQuery, Car.class);
     }
 }
