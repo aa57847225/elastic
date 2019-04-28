@@ -1,0 +1,82 @@
+1.搜索全部
+
+GET t_ware_house/_search
+
+GET t_ware_house/_search
+{
+  "query": {
+    "match_all": {
+    }
+  }
+}
+
+2.根据字段搜索
+
+GET t_ware_house/_search
+{
+    "query" : {
+        "match" : {
+            "tenant" : "zeguan"
+        }
+    }
+}
+
+3.多条件查询
+GET t_ware_house/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+      {
+        "match": {
+          "tenant": "zeguan"
+        }
+      },
+      {
+        "match": {
+          "city":"上海"
+        }
+      }
+      ]
+    }
+  }
+
+  4.往es中插入一条记录
+
+PUT /product_index/product/3
+
+{
+? ? "product_name" : "方太油烟机",
+? ? "product_desc" :? "一说到星空，就有太多美好的记忆，美丽的浩瀚宇宙，有太多说不清的神秘之处，星空太美丽，太绚烂！",
+? ? "price" :? 36.00
+}
+
+5.排序
+
+降序：
+
+GET table/_search
+{
+  "sort": [{"play_count":"desc"}]
+  ,
+  "query": {
+    "match_phrase": {
+      "album_name":"不一样的卡梅拉"
+     
+    }
+  }
+}
+升序：
+
+
+GET table/_search
+{
+  "sort": [{"play_count":"asc"}]
+  ,
+  "query": {
+    "match_phrase": {
+      "album_name":"不一样的卡梅拉"
+     
+    }
+  }
+}
