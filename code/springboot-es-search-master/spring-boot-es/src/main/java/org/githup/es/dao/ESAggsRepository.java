@@ -250,8 +250,11 @@ public class ESAggsRepository extends BaseRepository {
 					.startObject()
 					.startObject("properties")
 					//      .startObject("m_id").field("type","keyword").endObject()
-					.startObject("title").field("type","string").startObject("fields").startObject("suggest")
-					.field("type","completion").endObject().endObject().endObject()
+					.startObject("title").field("type","string")
+						.startObject("fields").
+							startObject("suggest").field("type","completion").endObject()
+						.endObject()
+					.endObject()
 					.startObject("ccontent").field("type","string").endObject()
 //					.startObject("title.suggest").field("type","completion").endObject()
 					.endObject()

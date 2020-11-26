@@ -51,6 +51,7 @@ public class ESSuggestRepository extends BaseRepository{
 					//设置一下分词器，目前采用的是ngram分词器，例如：中华崛起 ，可以分成中，中华，中华崛，中华崛起，华，华崛，华崛起，崛，崛起，起
 					//具体拆分主要根据min_gram和max_gram来拆分
 					.startObject("analysis")
+
 						.startObject("filter")
 							.startObject("gramFilter")
 								.field("type", "ngram")
@@ -59,17 +60,20 @@ public class ESSuggestRepository extends BaseRepository{
 								.array("token_chars", "letter", "digit")
 							.endObject()
 						.endObject()
+
 						.startObject("analyzer")
 							.startObject("gramAnalyzer")
 								.field("type", "custom")
 								.field("tokenizer", "whitespace")
 								.array("filter", "lowercase", "gramFilter")
 							.endObject()
+
 							.startObject("whitespaceAnalyzer")
 								.field("type", "custom")
 								.field("tokenizer", "whitespace")
 								.array("filter", "lowercase")
 							.endObject()
+
 						.endObject()
 					.endObject()
 				.endObject();

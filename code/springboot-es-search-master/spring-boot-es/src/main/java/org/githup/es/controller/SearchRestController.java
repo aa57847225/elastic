@@ -57,7 +57,11 @@ public class SearchRestController extends BaseController{
 	
 	/**
 	 * 构建索引
-	 * @param index
+	 * 1.想要高亮建议搜索的话 先创建索引  /buildIndex?index=bbs_post_index
+	 * 2 然后执行 最后一个控制器          /buildSuggest
+	 * 3.增加数据   addJSONDataDoc
+	 * 4.然后搜索                         /getSearchByParam  就能显示效果了
+ 	 * @param index
 	 * @return
 	 */
 	@RequestMapping(value = "/buildIndex")
@@ -292,7 +296,7 @@ public class SearchRestController extends BaseController{
 		param.setIndex("bbs_post_index");
 		param.setField("content");
 		param.setDistictField("id");
-		param.setKeyWord("压");
+		param.setKeyWord("游");
 		param.setLimit(10);
 		param.setOffset(0);
 
